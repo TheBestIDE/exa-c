@@ -21,7 +21,7 @@ const char *str_Mon[12] = { "Jan", "Feb", "Mat", "Apr",
 /*
  * Get string of file size
  */
-void getFileSize(struct stat* fstat, char buf[6])
+void getf_size(struct stat* fstat, char buf[6])
 {
     const char *unit[4] = { "", "Ki", "Mi", "Gi" };     // the unit of file size (none, Ki, Mi, Gi)
     int i = 0;  // a flag to show which unit to choose
@@ -40,25 +40,25 @@ void getFileSize(struct stat* fstat, char buf[6])
 /*
  * Get string of file permissions
  */
-int getFilePermis(struct stat* fstat, char buf[])
+int getf_permis(mode_t mode, char buf[])
 {
     // init buffer
     for (int i = 0; i < 10; i++)
         buf[i] = '-';
     // first position is a flag to show if file is a directory
-    buf[0] = S_ISDIR(fstat->st_mode) ? 'd' : '.';
-    // 1 4 7 position is a flag to show if file owner, group, other have read permission
-    for (int i = 1; i < 10; i += 3)
-        if (fstat->st_mode >> (i - 1) & 1)
-            buf[i] = 'r';
-    // 2 5 8 position is a flag to show if file owner, group, other have write permission
-    for (int i = 2; i < 10; i += 3)
-        if (fstat->st_mode >> (i - 1) & 1)
-            buf[i] = 'w';
-    // 3 6 9 position is a flag to show if file owner, group, other have read permission
-    for (int i = 3; i < 10; i += 3)
-        if (fstat->st_mode >> (i - 1) & 1)
-            buf[i] = 'x';
+    buf[0] = S_ISDIR(mode) ? 'd' : '.';
+    /* 3 bits for user  */
+    if ( mode & S_IRUSR ) buf[1] = 'r';
+    if ( mode & S_IWUSR ) buf[2] = 'w';
+    if ( mode & S_IXUSR ) buf[3] = 'x';
+    /* 3 bits for group */
+    if ( mode & S_IRGRP ) buf[4] = 'r';
+    if ( mode & S_IWGRP ) buf[5] = 'w';
+    if ( mode & S_IXGRP ) buf[6] = 'x';
+    /* 3 bits for other */
+    if ( mode & S_IROTH ) buf[7] = 'r';
+    if ( mode & S_IWOTH ) buf[8] = 'w';
+    if ( mode & S_IXOTH ) buf[9] = 'x';
     // end of string: '\0'
     buf[10] = 0;
 }
@@ -66,7 +66,7 @@ int getFilePermis(struct stat* fstat, char buf[])
 /*
  * convert uid to user name
  */
-void uidToName(uid_t uid, char buf[])
+void uid_to_name(uid_t uid, char buf[])
 {
     struct passwd* user;
     if ((user = getpwuid(uid)) == NULL)
@@ -78,7 +78,7 @@ void uidToName(uid_t uid, char buf[])
 /*
  * convert gid to group name
  */
-void gidToName(gid_t gid, char buf[])
+void gid_to_name(gid_t gid, char buf[])
 {
     struct group* grp;
     if ((grp = getgrgid(gid)) == NULL)
@@ -124,15 +124,15 @@ int setfex(struct dirent* fd, struct fexdet* buf)
     }
 
     buf->inode = fd->d_ino;
-    getFilePermis(fstat, buf->permis);
+    getf_permis(fstat->st_mode, buf->permis);
     buf->links = fstat->st_nlink;
     buf->size[0] = '\0';
     // directory not display size
     buf->isDir = S_ISDIR(fstat->st_mode);
-    getFileSize(fstat, buf->size);
+    getf_size(fstat, buf->size);
     buf->blocks = fstat->st_blocks;
-    uidToName(fstat->st_uid, buf->user);
-    gidToName(fstat->st_gid, buf->group);
+    uid_to_name(fstat->st_uid, buf->user);
+    gid_to_name(fstat->st_gid, buf->group);
     strtime(fstat->st_mtim.tv_sec, buf->date_modify);
     buf->name = fd->d_name;
 

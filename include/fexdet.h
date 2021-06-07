@@ -17,7 +17,7 @@ struct fexdet {
     char group[256];    // group of file owner
     char date_modify[20];   // modifid date
     char *name;     // file name
-    int isDir;      // 
+    int isDir;      // if it is a directory
 };
 
 int setfex(struct dirent*, struct fexdet*);

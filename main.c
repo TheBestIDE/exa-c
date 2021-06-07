@@ -16,12 +16,8 @@ char path[1024] = {0};   // The directory path to display
 
 int main(int argc, char* argv[])
 {
-    // Get running directory
-    if(getcwd(path, sizeof(path)) == NULL) {
-        fprintf(stderr, "The path is too long.");
-        return ERROR;
-    }
-    // printf("Running Path: %s\n", path);
+    // Default running path
+    path[0] = '.';
     // Open the Folder
     DIR* dir = opendir(path);
     if (dir == NULL) {
@@ -29,7 +25,7 @@ int main(int argc, char* argv[])
         return ERROR;
     }
 
-    printExGrid(dir);
+    print_ex_grd(dir);
 
     free(dir);
 
