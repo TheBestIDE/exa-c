@@ -13,6 +13,8 @@
  *  Path Parameter 
  */
 char path[1024] = {0};   // The directory path to display
+unsigned char gap_num = 1;  // The number of space between two items
+unsigned int print_item = 1;        // bit flag of print items
 
 int main(int argc, char* argv[])
 {

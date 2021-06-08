@@ -7,86 +7,216 @@
 #include "include/fexdet.h"
 #include "include/global.h"
 
+#define PRINT_GAP(num) printf("%*s", num, "")   // print gap between two items
+#define ALL_EX_NUM 9    // number of all extend items
+
+extern unsigned char gap_num;
+
+
+/* -----------------    Print title function    ------------------------*/
+
+// The type of function pointer to print extend title
+typedef void(*exttl_prt_func)(const char []);
+
+/*
+ * Print inode title with 3 space behind
+ */
+void print_inode_ttl(const char t[])
+{
+    PRINT_GAP(3);
+    PRINT_ATTR_LIN;
+    printf("%s", t);
+    PRINT_ATTR_ULIN;
+}
+
+/*
+ * Print size title with 1 space behind
+ */
+void print_siz_ttl(const char t[])
+{
+    PRINT_GAP(1);
+    PRINT_ATTR_LIN;
+    printf("%s", t);
+    PRINT_ATTR_ULIN;
+}
+
+/*
+ * Print other title with no special format
+ */
+void print_oth_ttl(const char t[])
+{
+    PRINT_ATTR_LIN;
+    printf("%s", t);
+    PRINT_ATTR_ULIN;
+}
+
 // extend file information title
-const char *extitle[9] = { "inode", "Permissions", "Links",
-                         "Size", "Blocks", "User", "Group",
-                         "Date Modified", "Name" };
+const char *extitle[ALL_EX_NUM] = { 
+    "inode", "Permissions", "Links",
+    "Size", "Blocks", "User", "Group",
+    "Date Modified", "Name" 
+};
+
+// The function pointer to print extend title
+const exttl_prt_func exttl_prt[ALL_EX_NUM] = {
+    print_inode_ttl, print_oth_ttl, print_oth_ttl,
+    print_siz_ttl, print_oth_ttl, print_oth_ttl, print_oth_ttl,
+    print_oth_ttl, print_oth_ttl
+};
 
 /*
  * Print extand 9 title fields with underline 
  */
 void print_ex_ttl()
 {
-    printf("   ");  // 3 space front of first field
-    for(int i = 0; i < 9; i++) {
-        PRINT_ATTR_LIN;
-        printf("%s", extitle[i]);
-        PRINT_ATTR_ULIN;
-        printf("  ");    // 2 space between two fields
+    for(int i = 0; i < ALL_EX_NUM; i++) {
+        exttl_prt[i](extitle[i]);
+        PRINT_GAP(gap_num);
     }
     printf("\n");   // end of title
+}
+
+
+/*---------------------    Print item message function     -----------------------*/
+
+
+// The type of function pointer to print extend file message
+typedef void(*mes_prt_func)(struct fexdet *);
+
+/*
+ * Print inode with colors
+ */
+void print_inode(struct fexdet *f)
+{
+    PRINT_FONT_MAG;
+    printf("%8lu", f->inode);
 }
 
 /* 
  * Print permission with colors
  */
-void print_permis(char permis[11])
+void print_permis(struct fexdet *f)
 {
-    printf("  ");   // double space
     // first position show if it is a directory
-    if (permis[0] == 'd')
+    if (f->permis[0] == 'd')
         PRINT_FONT_CYA;
     else
         PRINT_FONT_WHI;
-    putchar(permis[0]);
+    putchar(f->permis[0]);
     for (int i = 1; i < 10; i++) {
-        if (permis[i] == '-') {
+        if (f->permis[i] == '-') {
             PRINT_FONT_WHI;
         }
         else {
             printf("\033[%dm", (i + 1) % 3 + 31);
         }
-        putchar(permis[i]);
+        putchar(f->permis[i]);
     }
     putchar(' ');
 }
+
+/*
+ * Print hard links with colors
+ */
+void print_links(struct fexdet *f)
+{
+    PRINT_FONT_RED;
+    printf("%5lu", f->links);
+}
+
+/*
+ * Print size if it's not a directory 
+ */
+void print_size(struct fexdet *f)
+{
+    if (f->isDir) {
+        PRINT_FONT_GRE;
+        printf("%5c", '-');
+    }
+    else {
+        PRINT_FONT_GRE;
+        printf("%5s", f->size);
+    }
+}
+
+/*
+ * Print blocks if it's not a directory 
+ */
+void print_blocks(struct fexdet *f)
+{
+    if (f->isDir) {
+        PRINT_FONT_CYA;
+        printf("%6c", '-');
+    }
+    else {
+        PRINT_FONT_CYA;
+        printf("%6lu", f->blocks);
+    }
+}
+
+/*
+ * Print file owner user name
+ */
+void print_user(struct fexdet *f)
+{
+    PRINT_FONT_YEL;
+    printf("%-4s", f->user);
+}
+
+/*
+ * Print file owner group name
+ */
+void print_group(struct fexdet *f)
+{
+    PRINT_FONT_YEL;
+    printf("%-5s", f->group);
+}
+
+/*
+ * Print the last modified date of file
+ */
+void print_date_modify(struct fexdet *f)
+{
+    PRINT_FONT_CYA;
+    printf("%13s", f->date_modify);
+}
+
+/*
+ * Print file name with colors
+ */
+void print_name(struct fexdet *f)
+{
+    if (f->isDir)
+        PRINT_FONT_CYA;
+    else 
+        PRINT_FONT_WHI;
+    printf("%-s", f->name);
+}
+
+// The function pointer to print extend message
+const mes_prt_func exmes_prt[ALL_EX_NUM] = {
+    print_inode, print_permis, print_links,
+    print_size, print_blocks, print_user, print_group,
+    print_date_modify, print_name
+};
 
 /*
  * Formatted print fexdet with given struct
  */
 void printfex(struct fexdet *f)
 {
-    PRINT_FONT_MAG;
-    printf("%8lu", f->inode);
-    print_permis(f->permis);
-    PRINT_FONT_RED;
-    printf(" %6lu", f->links);
-    if (f->isDir) {
-        PRINT_FONT_GRE;
-        printf(" %5c", '-');
-        PRINT_FONT_CYA;
-        printf(" %7c", '-');
+    for (int i = 0; i < ALL_EX_NUM; i++) {
+        exmes_prt[i](f);
+        PRINT_GAP(gap_num);
     }
-    else {
-        PRINT_FONT_GRE;
-        printf(" %5s", f->size);
-        PRINT_FONT_CYA;
-        printf(" %7lu", f->blocks);
-    }
-    
-    PRINT_FONT_YEL;
-    printf("  %-4s", f->user);
-    printf("  %-5s", f->group);
-    PRINT_FONT_CYA;
-    printf(" %14s", f->date_modify);
-    if (f->isDir)
-        PRINT_FONT_CYA;
-    else 
-        PRINT_FONT_WHI;
-    printf("  %-s", f->name);
+    // end of file detail
     PRINT_FONT_WHI;
     printf("\n");
 }
+
+
+/*-----------------------     Public Function     ------------------------*/
+
 
 /* 
  * Print the file-struct as grid
