@@ -1,6 +1,9 @@
-#ifndef GRID_H
-#define GRID_H
+#ifndef _GRID_H
+#define _GRID_H
 
-int print_ex_grd(DIR*);
+#include "syscall.h"
+
+int print_ex_grd(ALL_PLAT_DIR*);
+void print_ex_ttl();
 
 #endif

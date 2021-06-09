@@ -1,13 +1,10 @@
-#include <unistd.h>
-#include <getopt.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <dirent.h>
 #include <stdlib.h>
 
 #include "include/pcolor.h"
 #include "include/grid.h"
 #include "include/global.h"
+#include "include/syscall.h"
 
 /*
  *  Path Parameter 
@@ -20,16 +17,27 @@ int main(int argc, char* argv[])
 {
     // Default running path
     path[0] = '.';
+
+    // if platform is supported
+    #if IS_SUPPORT
+
     // Open the Folder
-    DIR* dir = opendir(path);
+    ALL_PLAT_DIR* dir = open_dir_forall(path);
     if (dir == NULL) {
-        fprintf(stderr, "Open diretory");
+        fprintf(stderr, "Diretory can't open.");
         return ERROR;
     }
-
+    
+    print_ex_ttl();
     print_ex_grd(dir);
 
-    free(dir);
+    close_dir_forall(dir);
+
+    #else
+
+    fprintf(stderr, "Not support for this platform.");
+
+    #endif
 
     return 0;
 }

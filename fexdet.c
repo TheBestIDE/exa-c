@@ -1,15 +1,12 @@
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <unistd.h>
-#include <errno.h>
 #include <stdlib.h>
-#include <pwd.h>
-#include <grp.h>
 #include <time.h>
 
 #include "include/fexdet.h"
 #include "include/global.h"
+#include "include/syscall.h"
 
 extern const char path[1024];
 
@@ -109,7 +106,7 @@ void strtime(const time_t t, char buf[])
 /*
  * Set fexdet struct with given dirent to designated buffer
  */
-int setfex(struct dirent* fd, struct fexdet* buf)
+int setfex(ALL_PLAT_DIRENT* fd, struct fexdet* buf)
 {
     char *fan = malloc(1024); // file absolute name
     strcpy(fan, path);        // copy the file absolute path

@@ -3,8 +3,8 @@
  *  > Action: define printf output style settings
  */
 
-#ifndef PCOLOR_H
-#define PCOLOR_H
+#ifndef _PCOLOR_H
+#define _PCOLOR_H
 
 /* Set printf font color */
 #define PRINT_FONT_BLA  printf("\033[30m") // Black

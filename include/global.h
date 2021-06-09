@@ -1,5 +1,5 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#ifndef _GLOBAL_H
+#define _GLOBAL_H
 
 #ifndef ERROR
 #define ERROR 1

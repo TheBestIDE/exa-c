@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <dirent.h>
 
 #include "include/pcolor.h"
 #include "include/fexdet.h"
 #include "include/global.h"
+#include "include/grid.h"
 
 #define PRINT_GAP(num) printf("%*s", num, "")   // print gap between two items
-#define ALL_EX_NUM 9    // number of all extend items
 
 extern unsigned char gap_num;
 
@@ -17,6 +15,9 @@ extern unsigned char gap_num;
 
 // The type of function pointer to print extend title
 typedef void(*exttl_prt_func)(const char []);
+
+
+#ifdef linux
 
 /*
  * Print inode title with 3 space behind
@@ -28,6 +29,9 @@ void print_inode_ttl(const char t[])
     printf("%s", t);
     PRINT_ATTR_ULIN;
 }
+
+#endif
+
 
 /*
  * Print size title with 1 space behind
@@ -50,31 +54,39 @@ void print_oth_ttl(const char t[])
     PRINT_ATTR_ULIN;
 }
 
+
+/*
+ * Linux extand file detail head
+ */
+#ifdef linux
+
 // extend file information title
-const char *extitle[ALL_EX_NUM] = { 
-    "inode", "Permissions", "Links",
-    "Size", "Blocks", "User", "Group",
-    "Date Modified", "Name" 
+const char *extitle[ALL_EX_NUM] = {
+    "inode",
+    "Permissions",
+    "Links",
+    "Size",
+    "Blocks",
+    "User",
+    "Group",
+    "Date Modified",
+    "Name" 
 };
 
 // The function pointer to print extend title
 const exttl_prt_func exttl_prt[ALL_EX_NUM] = {
-    print_inode_ttl, print_oth_ttl, print_oth_ttl,
-    print_siz_ttl, print_oth_ttl, print_oth_ttl, print_oth_ttl,
-    print_oth_ttl, print_oth_ttl
+    print_inode_ttl,    // inode
+    print_oth_ttl,      // Permission
+    print_oth_ttl,      // Hard Links
+    print_siz_ttl,      // Size
+    print_oth_ttl,      // Blocks
+    print_oth_ttl,      // User
+    print_oth_ttl,      // Group
+    print_oth_ttl,      // Date Modified
+    print_oth_ttl       // Name
 };
 
-/*
- * Print extand 9 title fields with underline 
- */
-void print_ex_ttl()
-{
-    for(int i = 0; i < ALL_EX_NUM; i++) {
-        exttl_prt[i](extitle[i]);
-        PRINT_GAP(gap_num);
-    }
-    printf("\n");   // end of title
-}
+#endif
 
 
 /*---------------------    Print item message function     -----------------------*/
@@ -82,6 +94,12 @@ void print_ex_ttl()
 
 // The type of function pointer to print extend file message
 typedef void(*mes_prt_func)(struct fexdet *);
+
+
+/*
+ * Linux special item print function
+ */
+#ifdef linux
 
 /*
  * Print inode with colors
@@ -129,14 +147,11 @@ void print_links(struct fexdet *f)
  */
 void print_size(struct fexdet *f)
 {
-    if (f->isDir) {
-        PRINT_FONT_GRE;
+    PRINT_FONT_GRE;
+    if (f->isDir)
         printf("%5c", '-');
-    }
-    else {
-        PRINT_FONT_GRE;
+    else
         printf("%5s", f->size);
-    }
 }
 
 /*
@@ -181,6 +196,9 @@ void print_date_modify(struct fexdet *f)
     printf("%13s", f->date_modify);
 }
 
+#endif
+
+
 /*
  * Print file name with colors
  */
@@ -193,12 +211,27 @@ void print_name(struct fexdet *f)
     printf("%-s", f->name);
 }
 
+
+/*
+ * Linux item print order
+ */
+#ifdef linux
+
 // The function pointer to print extend message
 const mes_prt_func exmes_prt[ALL_EX_NUM] = {
-    print_inode, print_permis, print_links,
-    print_size, print_blocks, print_user, print_group,
-    print_date_modify, print_name
+    print_inode,
+    print_permis,
+    print_links,
+    print_size,
+    print_blocks,
+    print_user,
+    print_group,
+    print_date_modify,
+    print_name
 };
+
+#endif
+
 
 /*
  * Formatted print fexdet with given struct
@@ -221,20 +254,30 @@ void printfex(struct fexdet *f)
 /* 
  * Print the file-struct as grid
  */
-int print_ex_grd(DIR* dir)
+int print_ex_grd(ALL_PLAT_DIR* dir)
 {
-    print_ex_ttl();
-
-    struct dirent *p;
+    ALL_PLAT_DIRENT *p;
     struct fexdet *f = malloc(sizeof(struct fexdet));
     int flag = 0;   // to show setfex function is successful
     
     // print extend file info 
-    while(!flag && (p = readdir(dir)) != NULL) {
+    while(!flag && (p = read_dir_forall(dir)) != NULL) {
         flag = setfex(p, f);
         printfex(f);
     }
 
     free(f);
     return flag;
+}
+
+/*
+ * Print extand title fields with underline 
+ */
+void print_ex_ttl()
+{
+    for(int i = 0; i < ALL_EX_NUM; i++) {
+        exttl_prt[i](extitle[i]);
+        PRINT_GAP(gap_num);
+    }
+    printf("\n");   // end of title
 }

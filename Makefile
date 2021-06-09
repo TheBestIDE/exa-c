@@ -1,4 +1,4 @@
-objs = main.o grid.o fexdet.o
+objs = main.o grid.o fexdet.o syscall.o
 
 exa : $(objs)
 	@gcc -o exa $(objs)
@@ -11,6 +11,9 @@ grid.o : grid.c
 
 fexdet.o : fexdet.c
 	@gcc -c -o fexdet.o fexdet.c
+
+syscall.o : syscall.c
+	@gcc -c -o syscall.o syscall.c
 
 .PHONY : clean
 
