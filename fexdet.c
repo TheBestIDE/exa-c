@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -108,8 +107,8 @@ void strtime(const time_t t, char buf[])
  */
 int setfex(ALL_PLAT_DIRENT* fd, struct fexdet* buf)
 {
-    char *fan = malloc(1024); // file absolute name
-    strcpy(fan, path);        // copy the file absolute path
+    char *fan = malloc(1024);   // file absolute name
+    strcpy(fan, path);          // copy the file absolute path
     strcat(fan, "/");
     strcat(fan, fd->d_name);    // add the file name to absolute path
 
