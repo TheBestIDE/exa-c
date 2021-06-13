@@ -5,6 +5,7 @@
 #include "include/grid.h"
 #include "include/global.h"
 #include "include/syscall.h"
+#include "lib/list.h"
 
 /*
  *  Path Parameter 
@@ -12,6 +13,7 @@
 char path[1024] = {0};   // The directory path to display
 unsigned char gap_num = 1;  // The number of space between two items
 unsigned int print_item = 1;        // bit flag of print items
+srt_mod mode = _SRT_MOD_ASC;        // sort mode: asc or desc
 
 int main(int argc, char* argv[])
 {

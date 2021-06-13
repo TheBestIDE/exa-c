@@ -14,24 +14,7 @@ const char *str_Mon[12] = { "Jan", "Feb", "Mat", "Apr",
                             "May", "Jun", "Jul", "Aug",
                             "Sep", "Oct", "Nov", "Dec"};
 
-/*
- * Get string of file size
- */
-void getf_size(struct stat* fstat, char buf[6])
-{
-    const char *unit[4] = { "", "Ki", "Mi", "Gi" };     // the unit of file size (none, Ki, Mi, Gi)
-    int i = 0;  // a flag to show which unit to choose
-    float size = fstat->st_size;
-    while (size > 999) {
-        size /= 1024;
-        i++;
-    }
-    if (size < 10)
-        sprintf(buf, "%3.1f", size);
-    else
-        sprintf(buf, "%3.0f", size);
-    strcat(buf, unit[i]);
-}
+#ifdef linux
 
 /*
  * Get string of file permissions
@@ -83,6 +66,27 @@ void gid_to_name(gid_t gid, char buf[])
         sprintf(buf, "%s", grp->gr_name);
 }
 
+#endif
+
+/*
+ * Get string of file size
+ */
+void getf_size(struct stat* fstat, char buf[6])
+{
+    const char *unit[4] = { "", "Ki", "Mi", "Gi" };     // the unit of file size (none, Ki, Mi, Gi)
+    int i = 0;  // a flag to show which unit to choose
+    float size = fstat->st_size;
+    while (size > 999) {
+        size /= 1024;
+        i++;
+    }
+    if (size < 10)
+        sprintf(buf, "%3.1f", size);
+    else
+        sprintf(buf, "%3.0f", size);
+    strcat(buf, unit[i]);
+}
+
 /*
  * convert time_t to string format like dd Mon 
  */
@@ -102,6 +106,13 @@ void strtime(const time_t t, char buf[])
                                         mdf_time->tm_year + 1900);
 }
 
+
+/*-------------------                     ---------------------*/
+/*-------------------   Public function   ---------------------*/
+/*-------------------                     ---------------------*/
+
+#ifdef linux
+
 /*
  * Set fexdet struct with given dirent to designated buffer
  */
@@ -119,19 +130,61 @@ int setfex(ALL_PLAT_DIRENT* fd, struct fexdet* buf)
         return ERROR;
     }
 
-    buf->inode = fd->d_ino;
-    getf_permis(fstat->st_mode, buf->permis);
-    buf->links = fstat->st_nlink;
-    buf->size[0] = '\0';
-    // directory not display size
-    buf->isDir = S_ISDIR(fstat->st_mode);
-    getf_size(fstat, buf->size);
-    buf->blocks = fstat->st_blocks;
-    uid_to_name(fstat->st_uid, buf->user);
-    gid_to_name(fstat->st_gid, buf->group);
-    strtime(fstat->st_mtim.tv_sec, buf->date_modify);
-    buf->name = fd->d_name;
+    buf->inode = fd->d_ino;                 // get inode
+    getf_permis(fstat->st_mode, buf->permis);   // get permisstion
+    buf->links = fstat->st_nlink;           // get links
+    buf->isDir = S_ISDIR(fstat->st_mode);   // directory not display size
+    // get size
+    buf->size = fstat->st_size;
+    buf->str_size[0] = '\0';
+    getf_size(fstat, buf->str_size);
+    
+    buf->blocks = fstat->st_blocks;         // get blocks
+    uid_to_name(fstat->st_uid, buf->user);  // get user name
+    gid_to_name(fstat->st_gid, buf->group); // get user group name
+    // get latest modified time
+    buf->sec_time = fstat->st_mtim.tv_sec;
+    strtime(buf->sec_time, buf->date_modify);    
+    buf->name = fd->d_name;                 // get name
 
     free(fstat);
     free(fan);    // free heap memory
 }
+
+/*
+ * Compare file name function
+ */
+int fname_cmp(void *f1, void *f2)
+{
+    return strcmp(((struct fexdet*)f1)->name, ((struct fexdet*)f2)->name);
+}
+
+/*
+ * Compare file size
+ */
+int fsize_cmp(void *f1, void *f2)
+{
+    off_t s_dif = ((struct fexdet*)f1)->size - ((struct fexdet*)f2)->size;
+    // sign(s_dif)
+    return (s_dif != 0) | s_dif >> (sizeof(s_dif) * 8 - 1);
+}
+
+/*
+ * Compare file modified date
+ */
+int ftime_cmp(void *f1, void *f2)
+{
+    time_t t_dif = ((struct fexdet*)f1)->sec_time - ((struct fexdet*)f2)->sec_time;
+    // sign(s_dif)
+    return (t_dif != 0) | t_dif >> (sizeof(t_dif) * 8 - 1);
+}
+
+/*
+ * Free fexdet struct in heap
+ */
+void fexfree(struct fexdet *f)
+{
+    free(f);
+}
+
+#endif

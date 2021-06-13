@@ -5,6 +5,7 @@
 #include "include/fexdet.h"
 #include "include/global.h"
 #include "include/grid.h"
+#include "lib/list.h"
 
 #define PRINT_GAP(num) printf("%*s", num, "")   // print gap between two items
 
@@ -151,7 +152,7 @@ void print_size(struct fexdet *f)
     if (f->isDir)
         printf("%5c", '-');
     else
-        printf("%5s", f->size);
+        printf("%5s", f->str_size);
 }
 
 /*
@@ -257,16 +258,26 @@ void printfex(struct fexdet *f)
 int print_ex_grd(ALL_PLAT_DIR* dir)
 {
     ALL_PLAT_DIRENT *p;
-    struct fexdet *f = malloc(sizeof(struct fexdet));
     int flag = 0;   // to show setfex function is successful
+    dlist *li = init_lst();
     
     // print extend file info 
     while(!flag && (p = read_dir_forall(dir)) != NULL) {
+        // set file extend detail
+        struct fexdet *f = malloc(sizeof(struct fexdet));
         flag = setfex(p, f);
-        printfex(f);
+        add_lst(li, f);
     }
 
-    free(f);
+    srt_lst(li, fname_cmp, _SRT_MOD_ASC);
+
+    for (dlist_node *node = fst(li);
+         node != NULL;
+         node = node->nxt)
+        printfex((struct fexdet*)node->dat);
+    
+    free_lst(li, fexfree);
+
     return flag;
 }
 
