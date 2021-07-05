@@ -26,6 +26,11 @@
 typedef DIR ALL_PLAT_DIR;       // linux directory struct
 typedef struct dirent ALL_PLAT_DIRENT;   // linux direcotry entry struct
 
+
+/*-------------    type    --------------*/
+
+typedef off_t siz_t;    // linux size type
+
 #endif
 
 
@@ -64,6 +69,12 @@ typedef struct dirent ALL_PLAT_DIRENT;   // linux direcotry entry struct
 ALL_PLAT_DIR *open_dir_forall(char []);
 ALL_PLAT_DIRENT *read_dir_forall(ALL_PLAT_DIR*);
 int close_dir_forall(ALL_PLAT_DIR*);
+
+
+/*---------------    All Paltform Unified type    ----------------*/
+
+#include "flg.h"
+typedef unsigned char gap_t;    // type of gap number
 
 
 #endif

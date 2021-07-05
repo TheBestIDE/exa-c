@@ -9,7 +9,8 @@
 
 #define PRINT_GAP(num) printf("%*s", num, "")   // print gap between two items
 
-extern unsigned char gap_num;
+extern gap_t gap_num;
+extern pitm_t ipos;
 
 
 /* -----------------    Print title function    ------------------------*/
@@ -239,8 +240,8 @@ const mes_prt_func exmes_prt[ALL_EX_NUM] = {
  */
 void printfex(struct fexdet *f)
 {
-    for (int i = 0; i < ALL_EX_NUM; i++) {
-        exmes_prt[i](f);
+    for (int i = 0; i < ipos.pos_num; i++) {
+        exmes_prt[ipos.pos[i]](f);
         PRINT_GAP(gap_num);
     }
     // end of file detail
@@ -286,8 +287,8 @@ int print_ex_grd(ALL_PLAT_DIR* dir)
  */
 void print_ex_ttl()
 {
-    for(int i = 0; i < ALL_EX_NUM; i++) {
-        exttl_prt[i](extitle[i]);
+    for(int i = 0; i < ipos.pos_num; i++) {
+        exttl_prt[ipos.pos[i]](extitle[ipos.pos[i]]);
         PRINT_GAP(gap_num);
     }
     printf("\n");   // end of title

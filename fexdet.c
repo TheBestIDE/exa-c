@@ -71,11 +71,11 @@ void gid_to_name(gid_t gid, char buf[])
 /*
  * Get string of file size
  */
-void getf_size(struct stat* fstat, char buf[6])
+void getf_size(siz_t siz, char buf[6])
 {
-    const char *unit[4] = { "", "Ki", "Mi", "Gi" };     // the unit of file size (none, Ki, Mi, Gi)
+    const char *unit[5] = { "", "Ki", "Mi", "Gi", "Ti" };     // the unit of file size (none, Ki, Mi, Gi, Ti)
     int i = 0;  // a flag to show which unit to choose
-    float size = fstat->st_size;
+    double size = siz;
     while (size > 999) {
         size /= 1024;
         i++;
@@ -137,7 +137,7 @@ int setfex(ALL_PLAT_DIRENT* fd, struct fexdet* buf)
     // get size
     buf->size = fstat->st_size;
     buf->str_size[0] = '\0';
-    getf_size(fstat, buf->str_size);
+    getf_size(buf->size, buf->str_size);
     
     buf->blocks = fstat->st_blocks;         // get blocks
     uid_to_name(fstat->st_uid, buf->user);  // get user name
