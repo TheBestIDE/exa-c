@@ -1,4 +1,4 @@
-objs = main.o grid.o fexdet.o syscall.o list.o
+objs = main.o grid.o fexdet.o syscall.o list.o btree.o
 cc = gcc
 
 exa : $(objs)
@@ -18,6 +18,9 @@ syscall.o : syscall.c
 
 list.o : lib/list.c
 	@cc -c -o list.o lib/list.c
+
+btree.o : lib/btree.c
+	@cc -c -o btree.o lib/btree.c
 
 .PHONY : clean
 

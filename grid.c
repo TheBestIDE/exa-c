@@ -293,3 +293,23 @@ void print_ex_ttl()
     }
     printf("\n");   // end of title
 }
+
+/*
+ * Build the binary tree of file-struct
+ */
+int build_ex_tree(ALL_PLAT_DIR* dir)
+{
+    ALL_PLAT_DIRENT *p;
+    int flag = 0;   // to show setfex function is successful
+    dlist *tr = init_lst();
+    
+    // print extend file info 
+    while(!flag && (p = read_dir_forall(dir)) != NULL) {
+        // set file extend detail
+        struct fexdet *f = malloc(sizeof(struct fexdet));
+        flag = setfex(p, f);
+        // add to tree
+    }
+
+    return tr;
+}
